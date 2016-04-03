@@ -180,6 +180,7 @@ if __name__ == "__main__":
 	ap.add_argument("-L", dest="lineall", help="query all line departures")
 	ap.add_argument("-d", nargs="+", dest="depart", help="query departure")
 	ap.add_argument("-s", dest="show", action="store_true", help="show database")
+	ap.add_argument("-m", dest="map", help="display map")
 	args = ap.parse_args()
 	print(args)
 
@@ -245,6 +246,35 @@ if __name__ == "__main__":
 		
 	if args.show:
 		print(ddb)
+		
+	if args.map:
+		lname = args.map
+		import numpy as np
+		import matplotlib.pyplot as plt
+		
+		plt.figure(1)
+		plt.clf()
+		plt.hold(True)
+		
+		l = ldb.get(lname)
+		for d in ddb.db:
+			if (str(d.line) == str(lname)) and (d.station in l.dir1):
+				x = d.time.hour*100+d.time.minute
+				y = l.dir1.index(d.station)
+				xA = [x]
+				yA = [y]
+				for dd in d.delays:
+					v = int(dd[1][1:])
+					if v > 0:
+						xA.append(x + v)
+						yA.append(y)
+				if len(xA) > 1:
+					plt.plot(xA, yA, '-or')
+				else:
+					plt.plot(xA, yA, '-ob')
+		
+		plt.show()
+	
 	
 	if writeUpdate:
 		f = open("data.pickle","wb")
